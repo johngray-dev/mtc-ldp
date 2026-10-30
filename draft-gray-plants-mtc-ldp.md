@@ -4,7 +4,7 @@ abbrev: "MTC Landmark Distribution"
 category: info
 
 docname: draft-gray-plants-mtc-ldp-latest
-submissiontype: IETF  
+submissiontype: IETF
 number:
 date:
 consensus: true
