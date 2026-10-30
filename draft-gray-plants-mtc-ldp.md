@@ -56,7 +56,10 @@ author:
     email: kondtir@gmail.com
 
 normative:
-I-D.draft-ietf-plants-merkle-tree-certs-03:
+RFC5280:
+RFC3986:
+RFC8446:
+I-D.ietf-plants-merkle-tree-certs:
 
 informative:
 
@@ -80,7 +83,7 @@ omits signatures. It can be verified when the relying party has trusted the
 corresponding landmark subtree. A relying party that does not have the required
 subtree locally can obtain consistency proofs that connect it to a newer,
 trusted checkpoint. The MTC format and the subtree consistency proof algorithm
-are defined in {{I-D.ietf-plants-merkle-tree-certs-03}}.
+are defined in {{I-D.ietf-plants-merkle-tree-certs}}.
 
 This document defines an X.509 extension for discovering LDP servers, a request
 format, a response format, and the validation procedure for proof sets returned
@@ -95,11 +98,11 @@ policy, not on trusting the server.
 
 This document uses the TLS presentation language defined in {{RFC8446}}. The
 structures in this document use the `HashValue` type and the hash function of
-the MTC issuance log, as defined in {{I-D.ietf-plants-merkle-tree-certs-03}}.
+the MTC issuance log, as defined in {{I-D.ietf-plants-merkle-tree-certs}}.
 
 The terms *landmark*, *landmark subtree*, *relying party*, *checkpoint*, and
 *subtree consistency proof* have the meanings given in
-{{I-D.ietf-plants-merkle-tree-certs-03}}.
+{{I-D.ietf-plants-merkle-tree-certs}}.
 
 # Overview
 
@@ -200,7 +203,7 @@ preceding proof's target tree size.
 For every proof, `source_start` MUST be less than `source_end`, and
 `source_end` MUST be less than or equal to `target_tree_size`. The proof's
 `consistency_proof` MUST be a subtree consistency proof as defined in
-{{I-D.ietf-plants-merkle-tree-certs-03}}. `target_root` is the root reconstructed
+{{I-D.ietf-plants-merkle-tree-certs}}. `target_root` is the root reconstructed
 for the target tree by verifying that proof; it is not trusted until it is
 connected to the relying party's authenticated target checkpoint.
 
@@ -225,7 +228,7 @@ A relying party validating an MTC certificate with no locally trusted subtree
 for its `MTCProof` MUST perform the following steps:
 
 1. Validate the certificate and construct the MTC log entry as specified in
-   {{I-D.ietf-plants-merkle-tree-certs-03}}.
+   {{I-D.ietf-plants-merkle-tree-certs}}.
 2. Reconstruct the source subtree root by evaluating the certificate's inclusion
    proof using its `start` and `end` values. If proof evaluation fails, reject
    the certificate.
@@ -240,7 +243,7 @@ for its `MTCProof` MUST perform the following steps:
 6. For each proof, verify that its source range and source root satisfy the
    chaining requirements in {{proof-structures}}. Verify its subtree
    consistency proof using the algorithm in
-   {{I-D.ietf-plants-merkle-tree-certs-03}}. Reject the set if any verification
+   {{I-D.ietf-plants-merkle-tree-certs}}. Reject the set if any verification
    fails.
 7. Verify that the last proof's target tree size and root equal those of the
    authenticated target checkpoint. Reject the certificate if they differ.
