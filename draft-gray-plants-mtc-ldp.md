@@ -56,10 +56,10 @@ author:
     email: kondtir@gmail.com
 
 normative:
-RFC5280:
-RFC3986:
-RFC8446:
-I-D.ietf-plants-merkle-tree-certs:
+   RFC5280:
+   RFC3986:
+   RFC8446:
+   I-D.ietf-plants-merkle-tree-certs:
 
 informative:
 
