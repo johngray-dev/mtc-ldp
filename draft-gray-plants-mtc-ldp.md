@@ -49,20 +49,14 @@ author:
     org: UK National Cyber Security Centre
     email: luke.t2@ncsc.gov.uk
     country: United Kingdom
--
+ -
     ins: T. Reddy Konda
     name: Tirumaleswar Reddy Konda
     org: Nokia
     email: kondtir@gmail.com
 
 normative:
-  RFC2119:
-  RFC3986:
-  RFC5280:
-  RFC8174:
-  RFC8446:
-  RFC9110:
-  I-D.draft-ietf-plants-merkle-tree-certs-03:
+I-D.draft-ietf-plants-merkle-tree-certs-03:
 
 informative:
 
