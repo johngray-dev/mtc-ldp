@@ -19,11 +19,11 @@
 # Change the file extension to match the format (.xml for XML, etc...)
 #
 ###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
+title: "Landmark Distribution Point Fetching for Merkle Tree Certificates"
+abbrev: "MTC Landmark Distribution"
 category: info
 
-docname: draft-todo-yourname-protocol-latest
+docname: draft-ietf-plants-mtc-ldp-latest
 submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
 number:
 date:
