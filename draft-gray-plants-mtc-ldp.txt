@@ -2,34 +2,45 @@
 
 
 
-WG Working Group                                              Y. N. Here
-Internet-Draft                                    Your Organization Here
-Intended status: Informational                           30 October 2026
-Expires: 3 May 2027
+PKI, Logs, And Tree Signatures                                   J. Gray
+Internet-Draft                                                   Entrust
+Intended status: Informational                              J. Klaussner
+Expires: 3 May 2027                                 Bundesdruckerei GmbH
+                                                              L. Tindell
+                                       UK National Cyber Security Centre
+                                                          T. Reddy Konda
+                                                                   Nokia
+                                                         30 October 2026
 
 
    Landmark Distribution Point Fetching for Merkle Tree Certificates
-                    draft-ietf-plants-mtc-ldp-latest
+                    draft-gray-plants-mtc-ldp-latest
 
 Abstract
 
-   TODO Abstract
+   This document specifies a mechanism for a relying party to retrieve
+   Merkle-tree subtree consistency proofs needed to validate a landmark-
+   relative Merkle Tree Certificate (MTC).  An X.509 certificate
+   extension identifies one or more Landmark Distribution Points (LDPs).
+   A relying party requests a proof set from an LDP and validates the
+   proof chain against a trusted, signed target checkpoint.
 
 About This Document
 
    This note is to be removed before publishing as an RFC.
 
-   The latest revision of this draft can be found at
-   https://example.com/LATEST.  Status information for this document may
-   be found at https://datatracker.ietf.org/doc/draft-ietf-plants-mtc-
-   ldp/.
+   The latest revision of this draft can be found at https://johngray-
+   dev.github.io/mtc-ldp/draft-gray-plants-mtc-ldp.html.  Status
+   information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-gray-plants-mtc-ldp/.
 
-   Discussion of this document takes place on the WG Working Group
-   mailing list (mailto:WG@example.com), which is archived at
-   https://example.com/WG.
+   Discussion of this document takes place on the PKI, Logs, And Tree
+   Signatures Working Group mailing list (mailto:plants@ietf.org), which
+   is archived at https://mailarchive.ietf.org/arch/browse/plants.
+   Subscribe at https://www.ietf.org/mailman/listinfo/plants/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/USER/REPO.
+   https://github.com/johngray-dev/mtc-ldp.
 
 Status of This Memo
 
@@ -66,15 +77,36 @@ Table of Contents
 
    1.  Introduction
    2.  Conventions and Definitions
-   3.  Security Considerations
-   4.  IANA Considerations
-   5.  Normative References
+   3.  Overview
+   4.  Landmark Distribution Point Extension
+   5.  LDP Request and Response
+     5.1.  Request
+     5.2.  Proof Structures
+     5.3.  Response
+   6.  Verifier Procedure
+   7.  Efficiency Considerations
+   8.  Security Considerations
+   9.  IANA Considerations
+   10. Normative References
    Acknowledgments
-   Author's Address
+   Authors' Addresses
 
 1.  Introduction
 
-   TODO Introduction
+   A landmark-relative Merkle Tree Certificate (MTC) carries an
+   inclusion proof but omits signatures.  It can be verified when the
+   relying party has trusted the corresponding landmark subtree.  A
+   relying party that does not have the required subtree locally can
+   obtain consistency proofs that connect it to a newer, trusted
+   checkpoint.  The MTC format and the subtree consistency proof
+   algorithm are defined in [I-D.ietf-plants-merkle-tree-certs].
+
+   This document defines an X.509 extension for discovering LDP servers,
+   a request format, a response format, and the validation procedure for
+   proof sets returned by those servers.  LDP responses are untrusted
+   input: acceptance depends on successful proof verification and on the
+   relying party's existing MTC trust policy, not on trusting the
+   server.
 
 2.  Conventions and Definitions
 
@@ -84,31 +116,285 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-3.  Security Considerations
+   This document uses the TLS presentation language defined in
+   [RFC8446].  The structures in this document use the HashValue type
+   and the hash function of the MTC issuance log, as defined in
+   [I-D.ietf-plants-merkle-tree-certs].
 
-   TODO Security
+   The terms _landmark_, _landmark subtree_, _relying party_,
+   _checkpoint_, and _subtree consistency proof_ have the meanings given
+   in [I-D.ietf-plants-merkle-tree-certs].
 
-4.  IANA Considerations
+3.  Overview
 
-   This document has no IANA actions.
+   An MTC certificate's MTCProof contains start, end, and an inclusion
+   proof.  Those values identify a source subtree and allow the relying
+   party to compute its hash.  The relying party can then request a
+   proof set from an LDP.  The proof set connects that source subtree
+   through zero or more intermediate tree states to a target checkpoint
+   already trusted by the relying party.
 
-5.  Normative References
+   The relying party MUST authenticate the target checkpoint using its
+   normal MTC policy.  Proofs and intermediate roots returned by the LDP
+   do not establish trust by themselves.  Each proof establishes subtree
+   consistency with its stated target root; the final target root MUST
+   match the authenticated checkpoint.
+
+4.  Landmark Distribution Point Extension
+
+   The ldpBaseURIs extension is included in an MTC certificate by its
+   issuer.  It contains one or more base URIs at which the issuer makes
+   LDP resources available.  The relying party MUST process the
+   extension as an X.509 certificate extension in accordance with
+   [RFC5280].  The extension MUST be non-critical.
+
+   The extension is defined as follows:
+
+   id-pe-ldpBaseURIs OBJECT IDENTIFIER ::= { id-pe TBD }
+
+   LandmarkDistributionPoints ::= SEQUENCE SIZE (1..MAX) OF
+       LandmarkDistributionPoint
+
+   LandmarkDistributionPoint ::= IA5String
+
+   Each LandmarkDistributionPoint MUST be an absolute HTTPS URI, as
+   defined by [RFC3986].  A base URI MUST NOT contain a query component
+   or fragment.  Its path identifies the LDP resource to which the
+   request parameters in Section 5.1 are appended.  A client MAY try the
+   listed URIs in order until it obtains a valid response.  A client
+   MUST NOT accept a proof solely because it came from a URI in this
+   extension.
+
+5.  LDP Request and Response
+
+5.1.  Request
+
+   The relying party constructs an HTTP GET request to a
+   LandmarkDistributionPoint URI.  It appends the following query
+   parameters, encoded using the URI query syntax in [RFC3986]:
+
+   *  st: the start value from the certificate's MTCProof.
+
+   *  ed: the end value from the certificate's MTCProof.
+
+   *  target: the tree size of the trusted target checkpoint selected by
+      the relying party.
+
+   Each value MUST be encoded as an unsigned decimal integer in its
+   shortest form (no leading zeroes, except for the value zero).  Each
+   parameter MUST appear exactly once.  The endpoint MUST reject a
+   request with a missing, duplicated, or malformed parameter.  An
+   example request URI is:
+
+   https://ldp.example/mtc?st=4096&ed=4352&target=8192
+
+   The target checkpoint MUST be authenticated by the relying party and
+   MUST belong to the same MTC log as the certificate.  The relying
+   party selects the target; the server cannot cause the relying party
+   to accept a different target by changing the request or response.
+
+5.2.  Proof Structures
+
+   A LandmarkSubtreeProof carries a subtree consistency proof and the
+   source and target roots needed to verify it:
+
+   struct {
+       uint64 source_start;
+       uint64 source_end;
+       HashValue source_root;
+       uint64 target_tree_size;
+       HashValue target_root;
+       HashValue consistency_proof<0..2^16-1>;
+   } LandmarkSubtreeProof;
+
+   struct {
+       LandmarkSubtreeProof proofs<1..2^16-1>;
+   } LandmarkSubtreeProofSet;
+
+   The first proof in the set MUST identify the certificate subtree: its
+   source_start and source_end MUST equal the MTCProof's start and end,
+   and its source_root MUST equal the root reconstructed from the
+   MTCProof inclusion proof.
+
+   Each subsequent proof MUST use the preceding proof's target as its
+   source.  Its source_start MUST be zero, its source_end MUST equal the
+   preceding target_tree_size, and its source_root MUST equal the
+   preceding target_root.  The target tree size of each proof after the
+   first MUST be greater than the preceding proof's target tree size.
+
+   For every proof, source_start MUST be less than source_end, and
+   source_end MUST be less than or equal to target_tree_size.  The
+   proof's consistency_proof MUST be a subtree consistency proof as
+   defined in [I-D.ietf-plants-merkle-tree-certs]. target_root is the
+   root reconstructed for the target tree by verifying that proof; it is
+   not trusted until it is connected to the relying party's
+   authenticated target checkpoint.
+
+5.3.  Response
+
+   A successful response has an HTTP 200 status code and a body
+   containing exactly one LandmarkSubtreeProofSet, encoded using the TLS
+   presentation language in [RFC8446].  The response Content-Type is
+   application/octet-stream.  The body MUST NOT contain trailing data.
+   The proof set's final target_tree_size and target_root MUST equal the
+   tree size and root of the target checkpoint named in the request.
+
+   An LDP server MUST NOT return a proof set that fails these
+   requirements.  An endpoint SHOULD return an appropriate 4xx status
+   code for a malformed request and MAY return a 5xx status code when it
+   cannot currently fulfill a valid request.  A client MUST treat any
+   non-200 response as a failed retrieval and MUST NOT accept the
+   certificate on the basis of an incomplete proof set.
+
+6.  Verifier Procedure
+
+   A relying party validating an MTC certificate with no locally trusted
+   subtree for its MTCProof MUST perform the following steps:
+
+   1.  Validate the certificate and construct the MTC log entry as
+       specified in [I-D.ietf-plants-merkle-tree-certs].
+
+   2.  Reconstruct the source subtree root by evaluating the
+       certificate's inclusion proof using its start and end values.  If
+       proof evaluation fails, reject the certificate.
+
+   3.  Select a trusted target checkpoint for the same log and verify
+       its signature or signatures using the relying party's configured
+       MTC policy.  If no suitable trusted target is available,
+       validation fails.
+
+   4.  Construct the request in Section 5.1 using the MTCProof's start
+       and end values and the selected target checkpoint's tree size.
+       Retrieve the response from one of the certificate's LDP URIs.
+
+   5.  Parse exactly one LandmarkSubtreeProofSet.  Reject the response
+       if it is malformed, contains trailing data, or exceeds the
+       protocol's vector bounds.
+
+   6.  For each proof, verify that its source range and source root
+       satisfy the chaining requirements in Section 5.2.  Verify its
+       subtree consistency proof using the algorithm in
+       [I-D.ietf-plants-merkle-tree-certs].  Reject the set if any
+       verification fails.
+
+   7.  Verify that the last proof's target tree size and root equal
+       those of the authenticated target checkpoint.  Reject the
+       certificate if they differ.
+
+   8.  Accept the certificate only if all other certificate path
+       validation and MTC checks also succeed.
+
+   A relying party that already has the source subtree in its trusted-
+   subtree store uses the normal MTC verification procedure and does not
+   need to contact an LDP server.  Retrieval failure does not weaken
+   certificate validation and MUST NOT cause the relying party to accept
+   an otherwise unverifiable certificate.
+
+7.  Efficiency Considerations
+
+   A proof set can avoid fetching and verifying every intermediate
+   signed landmark.  Only the final checkpoint needs to be authenticated
+   by the relying party's MTC trust policy; intermediate steps are
+   connected by subtree consistency proofs.  LDP servers MAY choose
+   intermediate targets to make proof sets smaller or easier to produce.
+   They SHOULD avoid returning unnecessarily long proof chains, subject
+   to the response size limits imposed by the TLS presentation vectors.
+
+   An LDP server can precompute or cache consistency proofs when
+   checkpoints or landmarks are published.  The choice of caching
+   strategy and intermediate checkpoints is an implementation matter and
+   does not affect the verifier procedure.
+
+8.  Security Considerations
+
+   The LDP server is not a trust anchor.  A malicious or compromised
+   server can withhold, corrupt, or replay proof data, causing
+   validation to fail or consume resources, but it cannot make a relying
+   party accept a false subtree without breaking the MTC hash function
+   or the authenticated target checkpoint.  A relying party MUST verify
+   every proof and MUST compare the final root and tree size with the
+   target checkpoint it authenticated independently.
+
+   The extension is covered by the certificate issuer's signature.
+   Relying parties MUST apply their ordinary certificate path validation
+   and issuer-trust rules before using its URIs.  Implementations SHOULD
+   impose limits on URI length, response size, proof count, and
+   retrieval time to limit resource exhaustion.
+
+   Although the proof data is integrity-checked cryptographically, HTTPS
+   is required for LDP URIs to protect request metadata and response
+   availability in transit.  The query parameters reveal the requested
+   subtree and target tree size; implementations should account for this
+   disclosure in their privacy policies.
+
+9.  IANA Considerations
+
+   IANA is requested to allocate an object identifier for id-pe-
+   ldpBaseURIs under the PKIX id-pe arc, as defined in [RFC5280].  The
+   assigned value will replace TBD in this document.
+
+10.  Normative References
+
+   [I-D.ietf-plants-merkle-tree-certs]
+              Benjamin, D., O'Brien, D., Westerbaan, B., Valenta, L.,
+              and F. Valsorda, "Merkle Tree Certificates", Work in
+              Progress, Internet-Draft, draft-ietf-plants-merkle-tree-
+              certs-07, 7 October 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-plants-
+              merkle-tree-certs-07>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
 
+   [RFC3986]  Berners-Lee, T., Fielding, R., and L. Masinter, "Uniform
+              Resource Identifier (URI): Generic Syntax", STD 66,
+              RFC 3986, DOI 10.17487/RFC3986, January 2005,
+              <https://www.rfc-editor.org/rfc/rfc3986>.
+
+   [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
+              Housley, R., and W. Polk, "Internet X.509 Public Key
+              Infrastructure Certificate and Certificate Revocation List
+              (CRL) Profile", RFC 5280, DOI 10.17487/RFC5280, May 2008,
+              <https://www.rfc-editor.org/rfc/rfc5280>.
+
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8446]  Rescorla, E., "The Transport Layer Security (TLS) Protocol
+              Version 1.3", RFC 8446, DOI 10.17487/RFC8446, August 2018,
+              <https://www.rfc-editor.org/rfc/rfc8446>.
 
 Acknowledgments
 
    TODO acknowledge.
 
-Author's Address
+Authors' Addresses
 
-   Your Name Here
-   Your Organization Here
-   Email: your.email@example.com
+   John Gray
+   Entrust Limited
+   2500 Solandt Road – Suite 100
+   Ottawa, Ontario  K2K 3G5
+   Canada
+   Email: john.gray@entrust.com
+
+
+   Jan Klaussner
+   Bundesdruckerei GmbH
+   Kommandantenstr. 18
+   10969 Berlin
+   Germany
+   Email: jan.klaussner@bdr.de
+
+
+   Luke Tindell
+   UK National Cyber Security Centre
+   United Kingdom
+   Email: luke.t2@ncsc.gov.uk
+
+
+   Tirumaleswar Reddy Konda
+   Nokia
+   Email: kondtir@gmail.com
