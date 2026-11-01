@@ -1,0 +1,86 @@
+{
+  "magic": "E!vIA5L86J2I",
+  "timestamp": "2026-11-01T04:42:04.266671+00:00",
+  "repo": "johngray-dev/mtc-ldp",
+  "labels": [
+    {
+      "name": "accessibility",
+      "description": "Barrier affecting people with disabilities",
+      "color": "f143ab"
+    },
+    {
+      "name": "bug",
+      "description": "Something isn't working",
+      "color": "d73a4a"
+    },
+    {
+      "name": "documentation",
+      "description": "Improvements or additions to documentation",
+      "color": "0075ca"
+    },
+    {
+      "name": "duplicate",
+      "description": "This issue or pull request already exists",
+      "color": "cfd3d7"
+    },
+    {
+      "name": "enhancement",
+      "description": "New feature or request",
+      "color": "a2eeef"
+    },
+    {
+      "name": "help wanted",
+      "description": "Extra attention is needed",
+      "color": "008672"
+    },
+    {
+      "name": "good first issue",
+      "description": "Good for newcomers",
+      "color": "7057ff"
+    },
+    {
+      "name": "invalid",
+      "description": "This doesn't seem right",
+      "color": "e4e669"
+    },
+    {
+      "name": "question",
+      "description": "Further information is requested",
+      "color": "d876e3"
+    },
+    {
+      "name": "wontfix",
+      "description": "This will not be worked on",
+      "color": "ffffff"
+    }
+  ],
+  "issues": [],
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOVcnVR88AAAABMBJS0w",
+      "title": "Update draft-gray-plants-mtc-ldp.md",
+      "url": "https://github.com/johngray-dev/mtc-ldp/pull/1",
+      "state": "OPEN",
+      "author": "johngray-dev",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-10-31T20:58:22Z",
+      "updatedAt": "2026-10-31T20:58:22Z",
+      "baseRepository": "johngray-dev/mtc-ldp",
+      "baseRefName": "main",
+      "baseRefOid": "0fcf7818ed26ad14153201cf5b1c8e4efc1796d9",
+      "headRepository": "johngray-dev/mtc-ldp",
+      "headRefName": "johngray-update-intro",
+      "headRefOid": "9c35071aa1e95dd5dd59c9366d3f7512fd797eaa",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    }
+  ]
+}
