@@ -200,7 +200,7 @@ this extension.
 
 # LDP Request and Response {#ldp-request-response}
 
-## Request {#request-format}
+## Request {#request}
 
 The relying party constructs an HTTP GET request to a `LandmarkDistributionPoint`
 URI. The request identifies the subtree represented by the certificate's
@@ -339,7 +339,7 @@ for its `MTCProof` MUST perform the following steps:
  	 `[start, end)` is a valid subtree and evaluate the MTCProof inclusion proof
  	 to produce its subtree root. If either check fails, reject the certificate.
 3. Retrieve the LDP URI list from `ldpBaseURIs` and send a request containing
-	  only `st` and `ed` as specified in {{request-format}}.
+	  only `st` and `ed` as specified in {{request}}.
 4. Parse exactly one `LandmarkDistributionResponse`. Reject malformed
 	  encodings, trailing data, oversized vectors, or a proof source range that
 	  differs from the requested range.
