@@ -88,9 +88,46 @@ are defined in {{I-D.ietf-plants-merkle-tree-certs}}.
 This document defines an X.509 extension for discovering LDP servers, a request
 format, a response format, and the validation procedure for proof sets returned
 by those servers. LDP responses are untrusted input: acceptance depends on
-successful proof verification and on the relying party's existing MTC trust
-policy, not on trusting the server.
+successful proof verification and on the relying party's existing trust policy.
 
+## LDP mechanism use cases
+
+### Distribution of landmarks
+If a relying party is not part of the browser-based web PKI ecosystem, and it is
+presented with a landmark certificate, it will need a way to obtain the appropriate
+landmarks so it can verify the consistency proof in the certificate.  The LDP
+mechanism defined in this document gives a certificate issuer a way to indicate
+where those landmarks can be obtained.
+
+### Long-lived or intermittently connected devices
+The validity period of certificates may last for a long time. An LDP makes a way
+for the verifier to discover the landmark material it needs when performing
+validation, without requiring the verifier to have received that material through
+the same channel as the certificate.
+
+### Cached Landmark distribution at scale
+Landmarks are reusable across verifications for many certificates, and the
+infrastructure that serves them may cache the landmarks. This makes distribution
+much more efficient.
+
+### Constrained certificate environments
+The LDP allow information to be stored separation from the certificate, with a
+simply mechanism to look up the required information at validation time.  This is
+useful when certificate size, handshake size, bandwidth or storage is constrained.
+
+### Operational resilience
+The LDP mechanism allows more than one LDP to be specified, this then allows more
+resilience in the event of service disruptions.
+
+In summary, the Landmark Distribution Point (LDP) provides a mechanism for
+separating the distribution of landmarks from the certificates and proofs that
+depend upon them. This separation is particularly useful for large-scale PKI
+deployments, constrained environments, and long-lived devices. For example, a
+device may receive a certificate through one protocol while obtaining the
+corresponding landmark through a separately operated distribution service.
+Landmark Distribution Points therefore provide a common discovery and
+distribution mechanism without requiring the mechanism used to deliver
+certificates to also distribute the landmarks required to validate them.
 
 # Conventions and Definitions
 
