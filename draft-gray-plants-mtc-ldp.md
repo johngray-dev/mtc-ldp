@@ -95,22 +95,21 @@ party's existing trust policy.
 
 ### Private PKI Deployment without Transparency Logs
 In large enterprise/private PKI settings, certificate transparency may not be
-a requirement.  In these environments, the transparency logs will not be able
-to distribute the require checkpoints.  The LDP mechanism described in this
-document can be used as a replacement for transparency logs.
+a requirement.  In these environments, an LDP can provide the landmark and
+proof-distribution function for an MTC deployment.  It does not replace the MTC
+issuance log or any cosigner and monitoring requirements.
 
 ### Distribution of landmarks
 If a relying party is not part of the browser-based web PKI ecosystem, and it is
-presented with a landmark certificate, it will need a way to obtain the appropriate
-landmarks so it can verify the consistency proof in the certificate.  The LDP
-mechanism defined in this document gives a certificate issuer a way to indicate
-where those landmarks can be obtained.
+presented with a landmark-relative certificate, it will need a way to obtain the
+appropriate landmarks so it can verify the inclusion proof in the certificate.
+The LDP mechanism defined in this document gives a certificate issuer a way to
+indicate where those landmarks can be obtained.
 
 ### Long-lived or intermittently connected devices
-The validity period of certificates may last for a long time. An LDP makes a way
-for the verifier to discover the landmark material it needs when performing
-validation, without requiring the verifier to have received that material through
-the same channel as the certificate.
+The validity period of certificates may last for a long time. An LDP lets a
+verifier retrieve the landmark data it needs at validation time, without requiring
+that data to arrive with the certificate.
 
 ### Cached Landmark distribution at scale
 Landmarks are reusable across verifications for many certificates, and the
@@ -118,13 +117,13 @@ infrastructure that serves them may cache the landmarks. This makes distribution
 much more efficient.
 
 ### Constrained certificate environments
-The LDP allow information to be stored separation from the certificate, with a
-simply mechanism to look up the required information at validation time.  This is
-useful when certificate size, handshake size, bandwidth or storage is constrained.
+The LDP allows information to be stored separately from the certificate and
+retrieved at validation time using a simple lookup mechanism. This is
+useful when certificate size, handshake size, bandwidth or storage is
+constrained.
 
 ### Operational resilience
-The LDP mechanism allows more than one LDP to be specified, this then allows more
-resilience in the event of service disruptions.
+Specifying more than one LDP improves resilience during service disruptions.
 
 In summary, the Landmark Distribution Point (LDP) provides a mechanism for
 separating the distribution of landmarks from the certificates and proofs that
@@ -160,7 +159,8 @@ containing only `st` and `ed`, corresponding to `start` and `end`.
 Those values identify a source subtree and allow the relying party to compute
 its hash. The relying party can then request a proof set from an LDP. The proof
 set connects that source subtree through zero or more intermediate tree states
-to a target checkpoint already trusted by the relying party.
+to a target checkpoint that the relying party can authenticate under its normal
+MTC policy.
 
 The relying party MUST authenticate the target checkpoint using its normal MTC
 policy. Proofs and intermediate roots returned by the LDP do not establish
@@ -334,7 +334,7 @@ for its `MTCProof` MUST perform the following steps:
 
 1. Validate the certificate path from the MTC issuer’s CA certificate to a
    configured trust anchor according to {{RFC5280}}. Validate the MTC-specific
-   certificate fields and proof according to {{I-D.ietf-plants-merkle-tree-certs}}
+   certificate fields and proof according to {{I-D.ietf-plants-merkle-tree-certs}}.
 2. Extract `start` and `end` from the certificate's MTCProof. Validate that
  	 `[start, end)` is a valid subtree and evaluate the MTCProof inclusion proof
  	 to produce its subtree root. If either check fails, reject the certificate.
@@ -344,9 +344,9 @@ for its `MTCProof` MUST perform the following steps:
 	  encodings, trailing data, oversized vectors, or a proof source range that
 	  differs from the requested range.
 5. Parse the active-landmark list according to Section 6.4.3 of
-	  {{I-D.ietf-plants-merkle-tree-certs}}. Confirm that `[start, end)` is an
-	  active landmark subtree for the certificate's MTC issuance tree. Reject the
-	  certificate otherwise.
+   {{I-D.ietf-plants-merkle-tree-certs}}. Confirm that `[start, end)` is an
+   active landmark subtree for the certificate's MTC issuance tree. Reject the
+   certificate otherwise.
 6. Verify `LandmarkCheckpoint` signatures using the relying party's configured
   	MTC cosigner policy. Verify that `log_origin` identifies the same MTC
   	issuance tree as the certificate, and that the checkpoint timestamp is
@@ -397,20 +397,21 @@ authenticated landmark cannot be established.
 Without consistency proofs, a relying party catching up from an old landmark
 might need to retrieve and authenticate every intermediate landmark. A
 `LandmarkSubtreeProofSet` permits the LDP to connect the requested source
-subtree to one currently trusted checkpoint, reducing repeated
+subtree to a checkpoint the relying party can authenticate, reducing repeated
 checkpoint-signature verification. The final checkpoint remains independently
 authenticated by the relying party.
 
 An LDP MAY generate a direct consistency proof from the source subtree to the
 selected checkpoint. When it retains proofs between landmarks, the LDP SHOULD
 use `skip links` to bound the number of proofs required to connect older and
-newer landmarks.  A `skip link` only generates O(Log(num_landmarks)) for each
-landmark.  For example, a system that issued a landmark every hour for 10 years
-would have 87,600 landmarks.  When landmark 87,601 is created, only 17 landmark
-proofs will need to be created.  It would also reduce the LandmarkSubtreeProofSet
-from O(num_landmarks) to O(Log(num_landmarks), greatly reducing bandwidth
-requirements!  The precise skip-link layout is an implementation choice; all
-returned proofs MUST satisfy the chaining and verification rules in this document.
+newer landmarks.  A `skip link` structure can limit a proof chain to O(logN)
+proofs, where N is the number of landmarks. For example, a system that issued
+a landmark every hour for 10 years would have 87,600 landmarks.  When landmark
+87,601 is created, only 17 landmark proofs will need to be created.  It would
+also reduce the LandmarkSubtreeProofSet from O(N) to O(logN), greatly reducing
+bandwidth requirements!  The precise skip-link layout is an implementation
+choice; all returned proofs MUST satisfy the chaining and verification rules
+in this document.
 
 # Security Considerations
 
@@ -430,13 +431,9 @@ time to limit resource-exhaustion attacks.
 
 The `st` and `ed` query values reveal which subtree a relying party is
 verifying. Deployments should consider this disclosure in their privacy
-policies. HTTPS protects these values and the response against observation or
-modification in transit, but does not replace cryptographic proof validation.
-
-Although the proof data is integrity-checked cryptographically, HTTPS is
-required for LDP URIs to protect request metadata and response availability in
-transit. The query parameters reveal the requested subtree and target tree size;
-implementations should account for this disclosure in their privacy policies.
+policies. HTTPS protects the request parameters and response from observation
+or modification in transit, but does not replace cryptographic proof validation.
+Availability depends on the LDP service and network.
 
 # IANA Considerations
 
