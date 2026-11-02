@@ -96,7 +96,7 @@ party's existing trust policy.
 ### Private PKI Deployment without Transparency Logs
 In large enterprise/private PKI settings, certificate transparency may not be
 a requirement.  In these environments, the transparency logs will not be able
-to distribute the require checkpoints.  The LDP mechanism described in this 
+to distribute the require checkpoints.  The LDP mechanism described in this
 document can be used as a replacement for transparency logs.
 
 ### Distribution of landmarks
@@ -200,7 +200,7 @@ this extension.
 
 # LDP Request and Response {#ldp-request-response}
 
-## Request {#request}
+## Request {#request-format}
 
 The relying party constructs an HTTP GET request to a `LandmarkDistributionPoint`
 URI. The request identifies the subtree represented by the certificate's
@@ -327,7 +327,7 @@ structure MUST use that timestamp. The relying party MUST verify the checkpoint
 signatures against its configured MTC cosigner policy. The checkpoint
 timestamp MUST be acceptable under local freshness policy.
 
-# Verifier Procedure
+# Verifier Procedure {#verification}
 
 A relying party validating an MTC certificate with no locally trusted subtree
 for its `MTCProof` MUST perform the following steps:
@@ -373,7 +373,7 @@ NOT cause the relying party to accept an otherwise unverifiable certificate.
 A relying party MAY cache a successfully authenticated landmark.
 
 If a cached authenticated landmark is sufficient to validate a subsequent MTC
-certificate according to the normal verification procedure in 
+certificate according to the normal verification procedure in
 {{I-D.ietf-plants-merkle-tree-certs}}, the relying party does not need to contact
 an LDP server.
 
@@ -403,13 +403,14 @@ authenticated by the relying party.
 
 An LDP MAY generate a direct consistency proof from the source subtree to the
 selected checkpoint. When it retains proofs between landmarks, the LDP SHOULD
-use skip links to bound the number of proofs required to connect older and
-newer landmarks. For example, when a new landmark with sequence number `L` is
-published, the LDP can retain consistency proofs from earlier landmarks whose
-sequence numbers differ from `L` by powers of two. This requires
-O(log L) new proofs per landmark and allows a proof set with O(log L) entries.
-The precise skip-link layout is an implementation choice; all returned proofs
-MUST satisfy the chaining and verification rules in this document.
+use `skip links` to bound the number of proofs required to connect older and
+newer landmarks.  A `skip link` only generates O(Log(num_landmarks)) for each
+landmark.  For example, a system that issued a landmark every hour for 10 years
+would have 87,600 landmarks.  When landmark 87,601 is created, only 17 landmark
+proofs will need to be created.  It would also reduce the LandmarkSubtreeProofSet
+from O(num_landmarks) to O(Log(num_landmarks), greatly reducing bandwidth
+requirements!  The precise skip-link layout is an implementation choice; all
+returned proofs MUST satisfy the chaining and verification rules in this document.
 
 # Security Considerations
 
@@ -448,4 +449,5 @@ document.
 # Acknowledgments
 {:numbered="false"}
 
-TODO acknowledge.
+Thanks to David Benjamin, Bas Westerbaan, Mike Ounsworth, Rich Salz and
+Kris Kwiatkowski for their feedback during the design of this draft.
