@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-11-01T04:42:04.266671+00:00",
+  "timestamp": "2026-11-03T05:35:56.766276+00:00",
   "repo": "johngray-dev/mtc-ldp",
   "labels": [
     {
@@ -54,31 +54,106 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 4,
+      "id": "I_kwDOVcnVR88AAAABb9GmNg",
+      "title": "Do the landmarks need to be signed or do we trust the LDP",
+      "url": "https://github.com/johngray-dev/mtc-ldp/issues/4",
+      "state": "OPEN",
+      "author": "johngray-dev",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "The landmarks are returned in:\n\nstruct {\n\t opaque landmarks<1..2^24-1>;\n\t opaque checkpoint<1..2^24-1>;\n\t LandmarkSubtreeProofSet proof_set;\n} LandmarkDistributionResponse;\n\nBy the LDP server.\n\nDo they need to be signed?",
+      "createdAt": "2026-11-02T21:06:18Z",
+      "updatedAt": "2026-11-02T21:06:18Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": [
     {
       "number": 1,
       "id": "PR_kwDOVcnVR88AAAABMBJS0w",
       "title": "Update draft-gray-plants-mtc-ldp.md",
       "url": "https://github.com/johngray-dev/mtc-ldp/pull/1",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "johngray-dev",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "",
       "createdAt": "2026-10-31T20:58:22Z",
-      "updatedAt": "2026-10-31T20:58:22Z",
+      "updatedAt": "2026-11-02T03:23:28Z",
       "baseRepository": "johngray-dev/mtc-ldp",
       "baseRefName": "main",
       "baseRefOid": "0fcf7818ed26ad14153201cf5b1c8e4efc1796d9",
       "headRepository": "johngray-dev/mtc-ldp",
       "headRefName": "johngray-update-intro",
       "headRefOid": "9c35071aa1e95dd5dd59c9366d3f7512fd797eaa",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-11-02T03:23:28Z",
+      "mergedAt": "2026-11-02T03:23:28Z",
+      "mergedBy": "johngray-dev",
+      "mergeCommit": {
+        "oid": "d1bd677a2ad63fe465b04a284dc23a334edfed77"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOVcnVR88AAAABMNeXZQ",
+      "title": "Update draft for latest mtc draft changes",
+      "url": "https://github.com/johngray-dev/mtc-ldp/pull/2",
+      "state": "MERGED",
+      "author": "johngray-dev",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-11-02T03:16:50Z",
+      "updatedAt": "2026-11-02T03:23:50Z",
+      "baseRepository": "johngray-dev/mtc-ldp",
+      "baseRefName": "main",
+      "baseRefOid": "0fcf7818ed26ad14153201cf5b1c8e4efc1796d9",
+      "headRepository": "johngray-dev/mtc-ldp",
+      "headRefName": "Update-draft-for-latest-MTC-draft-changes",
+      "headRefOid": "8c4a3ad0699cc814188c4ab883085016cd53dbfa",
+      "closedAt": "2026-11-02T03:23:50Z",
+      "mergedAt": "2026-11-02T03:23:50Z",
+      "mergedBy": "johngray-dev",
+      "mergeCommit": {
+        "oid": "fc9a0355cfef6991ab55595316997a07753b9769"
+      },
+      "comments": [],
+      "reviews": []
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOVcnVR88AAAABMZ36Gg",
+      "title": "Tweak the document a little more",
+      "url": "https://github.com/johngray-dev/mtc-ldp/pull/3",
+      "state": "MERGED",
+      "author": "johngray-dev",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-11-02T21:04:41Z",
+      "updatedAt": "2026-11-02T21:07:12Z",
+      "baseRepository": "johngray-dev/mtc-ldp",
+      "baseRefName": "main",
+      "baseRefOid": "fc9a0355cfef6991ab55595316997a07753b9769",
+      "headRepository": "johngray-dev/mtc-ldp",
+      "headRefName": "jg_additionalTweaks",
+      "headRefOid": "f31f6b44ef0266bb8b6282779683b57af3effb19",
+      "closedAt": "2026-11-02T21:07:11Z",
+      "mergedAt": "2026-11-02T21:07:11Z",
+      "mergedBy": "johngray-dev",
+      "mergeCommit": {
+        "oid": "abe351815215da0ae28a54e525f9cc13b56d7628"
+      },
       "comments": [],
       "reviews": []
     }
